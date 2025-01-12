@@ -1,5 +1,6 @@
 package app.junsu.popcat
 
+import android.media.SoundPool
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.junsu.popcat.ui.theme.PopCatTheme
@@ -43,6 +46,13 @@ fun Popcat(
     modifier: Modifier = Modifier,
 ) {
     var pressed by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val soundPool = remember { SoundPool.Builder().setMaxStreams(10).build() }
+    var popSoundId: Int? = null
+
+    LaunchedEffect(Unit) {
+        popSoundId = soundPool.load(context, R.raw.pop_sound, 1)
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -53,6 +63,7 @@ fun Popcat(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {
+                            soundPool.play(popSoundId!!, 1f, 1f, 0, 0, 1f)
                             pressed = true
                             try {
                                 awaitRelease()
