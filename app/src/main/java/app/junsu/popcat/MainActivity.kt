@@ -58,9 +58,14 @@ fun Popcat(
     val soundPool = remember { SoundPool.Builder().setMaxStreams(10).build() }
     var popSoundId: Int? = null
 
-
     LaunchedEffect(Unit) {
-        popSoundId = soundPool.load(context, R.raw.pop_sound, 1)
+        popSoundId = soundPool.load(
+            context,
+            // resource ID
+            R.raw.pop_sound,
+            // priority
+            1,
+        )
     }
 
     Scaffold(
