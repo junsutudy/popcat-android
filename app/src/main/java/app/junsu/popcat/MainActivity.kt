@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.junsu.popcat.ui.theme.PopCatTheme
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieAnimatable
+import com.airbnb.lottie.compose.rememberLottieComposition
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,12 +57,16 @@ class MainActivity : ComponentActivity() {
 fun Popcat(
     modifier: Modifier = Modifier,
 ) {
+
     var pressed by remember { mutableStateOf(false) }
     var clickCount by remember { mutableIntStateOf(0) }
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     val soundPool = remember { SoundPool.Builder().setMaxStreams(10).build() }
     var popSoundId: Int? = null
+
 
     LaunchedEffect(Unit) {
         popSoundId = soundPool.load(
@@ -66,6 +76,24 @@ fun Popcat(
             // priority
             1,
         )
+    }
+
+    val animComposition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(R.raw.pop_anim),
+    )
+    val animatable = rememberLottieAnimatable()
+
+    fun handleClick() {
+        popSoundId?.let {
+            soundPool.play(popSoundId, 1f, 1f, 0, 0, 1f)
+        }
+        scope.launch {
+            animatable.animate(
+                composition = animComposition,
+                initialProgress = 0f,
+                speed = 3f,
+            )
+        }
     }
 
     Scaffold(
@@ -97,7 +125,7 @@ fun Popcat(
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onPress = {
-                                    soundPool.play(popSoundId!!, 1f, 1f, 0, 0, 1f)
+                                    handleClick()
                                     clickCount++
                                     pressed = true
                                     try {
@@ -116,6 +144,14 @@ fun Popcat(
                     fontWeight = FontWeight.Bold,
                 )
             }
+
+            LottieAnimation(
+                composition = animComposition,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                progress = { animatable.progress },
+            )
         }
     }
 }
